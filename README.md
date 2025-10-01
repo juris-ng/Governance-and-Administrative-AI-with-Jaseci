@@ -16,7 +16,7 @@ An innovative democracy platform that transforms citizen-government interaction 
 
 ## 🚀 **Live Demo**
 
-🌐 **[Experience the Platform Live](YOUR-STREAMLIT-URL-HERE)**
+🌐 **[Experience the Platform Live](https://mauvoice.streamlit.app/)**
 
 *Try all features including citizen registration, petition creation, incident reporting, and real-time analytics.*
 

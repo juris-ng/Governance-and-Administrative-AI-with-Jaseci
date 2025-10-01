@@ -2,7 +2,7 @@
 
 **A revolutionary civic engagement platform built with Jac Language, byLLM AI, and Streamlit**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Appe](https://img.shieldsI](https://img.shields.io/badge/byLLM-AI%20Powerehttps://img.shields.io/badge/Streamlit-Web
+Check it out: https://mauvoice.streamlit.app/
 
 ## 📋 **Project Overview**
 

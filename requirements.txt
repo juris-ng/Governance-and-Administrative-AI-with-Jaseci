@@ -1,0 +1,5 @@
+streamlit>=1.28.0
+pandas>=1.5.0
+datetime
+jaclang>=0.8.7
+byllm>=0.1.0

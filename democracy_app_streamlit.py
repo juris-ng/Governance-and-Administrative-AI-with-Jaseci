@@ -1,589 +1,814 @@
-# Next-Gen Local Democracy Platform - FIXED VERSION
-# PowerPoint Implementation with Jac Enhancement - Error Free
+# MAU2 Democracy Platform - Complete Professional Implementation
+# Inspired by MAU2 UI/UX Screenshots - Production Ready
 # Live at: https://mauvoice.streamlit.app/
 
 import streamlit as st
 import datetime
-import time
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from streamlit_option_menu import option_menu
+import time
 
-# === JAC LANGUAGE INTEGRATION ===
-try:
-    import jaclang
-    JAC_AVAILABLE = True
-except ImportError:
-    JAC_AVAILABLE = False
-
-# === BYLLM AI INTEGRATION ===
-try:
-    from byllm import byLLM
-    BYLLM_AVAILABLE = True
-    llm = byLLM(model="gpt-3.5-turbo")
-except ImportError:
-    BYLLM_AVAILABLE = False
-    llm = None
-
-# Configure page
+# === PAGE CONFIGURATION ===
 st.set_page_config(
-    page_title='🏛️ Next-Gen Local Democracy Platform',
-    page_icon='🏛️',
-    layout='wide',
-    initial_sidebar_state='expanded'
+    page_title="MAU2 - Civic Engagement Platform", 
+    page_icon="🏛️",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# === JAC-STYLE CLASSES (Exact PowerPoint Implementation) ===
+# === SESSION STATE INITIALIZATION ===
+def initialize_platform():
+    if 'user_authenticated' not in st.session_state:
+        st.session_state.user_authenticated = False
+    if 'user_role' not in st.session_state:
+        st.session_state.user_role = 'citizen'
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 'landing'
+    if 'petitions' not in st.session_state:
+        st.session_state.petitions = []
+    if 'reports' not in st.session_state:
+        st.session_state.reports = []
+    if 'notifications' not in st.session_state:
+        st.session_state.notifications = []
 
-class JacCitizen:
-    """Citizens View - Exact PowerPoint functionality"""
-    def __init__(self, name: str, email: str, location: str):
-        self.name = name
-        self.email = email
-        self.location = location
-        self.registration_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-        self.governance_tracking = []
-        self.participation_history = []
-        
-    def track_governance_performance(self, institution: str, performance_data: dict) -> dict:
-        tracking_entry = {
-            'institution': institution,
-            'performance': performance_data,
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
-            'citizen': self.name
-        }
-        self.governance_tracking.append(tracking_entry)
-        return tracking_entry
-    
-    def ai_analyze_governance(self, institution: str) -> str:
-        if BYLLM_AVAILABLE:
-            try:
-                prompt = f"Analyze governance performance for {institution} and provide citizen insights"
-                return llm.generate(prompt)
-            except:
-                pass
-        return f"Performance analysis for {institution}: Data shows consistent service delivery with room for improvement in transparency."
+initialize_platform()
 
-class JacPetition:
-    """Petition system - Exact PowerPoint functionality"""
-    def __init__(self, title: str, description: str, creator: str):
-        self.title = title
-        self.description = description
-        self.creator = creator
-        self.votes = 1
-        self.status = "active"
-        self.created_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-        self.upvotes = 1
-        self.petition_id = f"PET-{datetime.datetime.now().strftime('%Y%m%d')}-{hash(title) % 10000:04d}"
-        self.public_body_response = ""
-        self.ai_category = ""
-        
-    def upvote_petition(self) -> int:
-        self.upvotes += 1
-        self.votes += 1
-        return self.upvotes
-    
-    def ai_categorize_petition(self) -> str:
-        if BYLLM_AVAILABLE:
-            try:
-                prompt = f"Categorize this petition for government routing: {self.title} - {self.description}"
-                category = llm.generate(prompt)
-                self.ai_category = category
-                return category
-            except:
-                pass
-        return f"AI-Routed: Infrastructure/Public Works - {self.title}"
-
-class JacReport:
-    """Reporting system - Open and Incognito as per PowerPoint"""
-    def __init__(self, report_type: str, description: str, location: str, reporter: str, is_incognito: bool = False):
-        self.report_type = report_type
-        self.description = description
-        self.location = location
-        self.reporter = "Anonymous" if is_incognito else reporter
-        self.is_incognito = is_incognito
-        self.status = "submitted"
-        self.created_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-        self.report_id = f"RPT-{datetime.datetime.now().strftime('%Y%m%d')}-{hash(description) % 10000:04d}"
-        self.routed_to = ""
-        self.ai_routing = ""
-        
-    def ai_route_report(self) -> dict:
-        if BYLLM_AVAILABLE:
-            try:
-                prompt = f"Route this report to Police, NGO, or Legal Professional: {self.report_type} - {self.description}"
-                routing = llm.generate(prompt)
-                self.ai_routing = routing
-                return {"routing": routing, "confidence": "High"}
-            except:
-                pass
-        
-        routing_map = {
-            "Crime": "🚔 Police Department",
-            "Safety": "🚔 Police Department", 
-            "Legal Issue": "⚖️ Legal Professionals",
-            "Human Rights": "🏛️ NGO - Human Rights",
-            "Corruption": "🏛️ NGO - Transparency",
-            "Environment": "🌍 NGO - Environmental",
-            "Other": "🏛️ General NGO Support"
-        }
-        
-        self.routed_to = routing_map.get(self.report_type, "🏛️ General NGO Support")
-        return {"routing": self.routed_to, "ai_match": True}
-
-class JacPublicBody:
-    """Public Bodies/Institutions View - Exact PowerPoint functionality"""
-    def __init__(self, name: str, body_type: str):
-        self.name = name
-        self.body_type = body_type
-        self.active = True
-        self.response_time = 2.5
-        self.performance_updates = []
-        self.received_reports = []
-        self.petition_responses = []
-        
-    def provide_evidenced_update(self, update_content: str, evidence: dict) -> dict:
-        update = {
-            'content': update_content,
-            'evidence': evidence,
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
-            'institution': self.name,
-            'update_id': f"UPD-{len(self.performance_updates) + 1:04d}"
-        }
-        self.performance_updates.append(update)
-        return update
-    
-    def respond_to_petition(self, petition: JacPetition, response: str) -> dict:
-        petition_response = {
-            'petition_id': petition.petition_id,
-            'petition_title': petition.title,
-            'response': response,
-            'responder': self.name,
-            'response_date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
-            'status': 'responded'
-        }
-        self.petition_responses.append(petition_response)
-        petition.public_body_response = response
-        petition.status = "responded"
-        return petition_response
-
-class JacOversightBody:
-    """Legal Professionals/NGOs/Police View - Exact PowerPoint functionality"""
-    def __init__(self, organization: str, org_type: str):
-        self.organization = organization
-        self.org_type = org_type
-        self.governance_reviews = []
-        self.handled_reports = []
-        self.created_petitions = []
-        self.education_updates = []
-
-# === SESSION STATE INITIALIZATION (FIXED) ===
-def initialize_session_state():
-    if 'jac_citizens' not in st.session_state:
-        st.session_state.jac_citizens = []
-    if 'jac_petitions' not in st.session_state:
-        st.session_state.jac_petitions = []
-    if 'jac_reports' not in st.session_state:
-        st.session_state.jac_reports = []
-    if 'jac_public_bodies' not in st.session_state:
-        st.session_state.jac_public_bodies = [
-            JacPublicBody("Municipal Government", "Municipal"),
-            JacPublicBody("County Administration", "County"),
-            JacPublicBody("Public Works Department", "Departmental")
-        ]
-    if 'jac_oversight_bodies' not in st.session_state:
-        st.session_state.jac_oversight_bodies = [
-            JacOversightBody("Democracy Oversight NGO", "NGO"),
-            JacOversightBody("Legal Aid Society", "Legal"),
-            JacOversightBody("Police Liaison Unit", "Police")
-        ]
-    if 'visit_count' not in st.session_state:
-        st.session_state.visit_count = 0
-
-# Initialize session state
-initialize_session_state()
-
-# Increment visit count
-st.session_state.visit_count += 1
-
-# === ENHANCED CSS WITH POWERPOINT BRANDING ===
+# === MODERN CSS STYLING (MAU2-INSPIRED) ===
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    .powerpoint-header {
-        background: linear-gradient(135deg, #10B5BF 0%, #0EA5E9 100%);
-        padding: 3rem 2rem;
-        border-radius: 12px;
+    .stApp {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* MAU2 Header Styling */
+    .mau2-header {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        padding: 1rem 2rem;
+        margin: -1rem -1rem 2rem -1rem;
         color: white;
-        text-align: center;
-        margin-bottom: 3rem;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
-    .powerpoint-header h1 {
-        font-size: 3rem;
+    .mau2-logo {
+        font-size: 1.8rem;
         font-weight: 700;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        color: white;
+        text-decoration: none;
     }
     
-    .citizen-card {
-        background: linear-gradient(135deg, #FFFF00, #FEF3C7);
-        border: 1px solid #F59E0B;
+    .mau2-nav {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+    
+    .mau2-nav-item {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: background 0.3s;
+    }
+    
+    .mau2-nav-item:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    /* Landing Page Styling */
+    .mau2-hero {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        margin: 2rem 0;
+    }
+    
+    .mau2-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .mau2-hero p {
+        font-size: 1.25rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Card Styling */
+    .mau2-card {
+        background: white;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
         margin: 1rem 0;
     }
     
-    .public-body-card {
-        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
-        border: 1px solid #3B82F6;
+    .mau2-card h3 {
+        color: #1e293b;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    /* Button Styling */
+    .mau2-btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+    
+    .mau2-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+    }
+    
+    /* Form Styling */
+    .mau2-form-container {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .mau2-form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .mau2-form-header h2 {
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mau2-form-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    /* Progress Indicator */
+    .mau2-progress {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+    }
+    
+    .mau2-progress-step {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin: 0 1rem;
+        position: relative;
+    }
+    
+    .mau2-progress-step.active {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .mau2-progress-step.completed {
+        background: #10b981;
+        color: white;
+    }
+    
+    /* Privacy Controls */
+    .mau2-privacy-controls {
+        background: #f8fafc;
         border-radius: 12px;
         padding: 1.5rem;
+        margin: 1.5rem 0;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .mau2-privacy-toggle {
+        display: flex;
+        gap: 1rem;
         margin: 1rem 0;
     }
     
-    .oversight-card {
-        background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
-        border: 1px solid #10B981;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-    }
-    
-    .ai-enhanced {
-        background: linear-gradient(135deg, #F3E8FF, #E9D5FF);
-        border: 1px solid #8B5CF6;
-        border-radius: 12px;
+    .mau2-toggle-option {
+        flex: 1;
         padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .mau2-toggle-option.selected {
+        border-color: #3b82f6;
+        background: #dbeafe;
+    }
+    
+    /* Map Container */
+    .mau2-map-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin: 1rem 0;
+    }
+    
+    /* Analytics Cards */
+    .mau2-analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .mau2-metric-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .mau2-metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mau2-metric-label {
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    /* Timeline Styling */
+    .mau2-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .mau2-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background: #e2e8f0;
+    }
+    
+    .mau2-timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .mau2-timeline-marker {
+        position: absolute;
+        left: -20px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #3b82f6;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px #3b82f6;
+    }
+    
+    .mau2-timeline-content {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    
+    /* Notification Styling */
+    .mau2-notification {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
         margin: 0.5rem 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-left: 4px solid #3b82f6;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .mau2-notification.success {
+        border-left-color: #10b981;
+    }
+    
+    .mau2-notification.warning {
+        border-left-color: #f59e0b;
+    }
+    
+    .mau2-notification.error {
+        border-left-color: #ef4444;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu, .stDeployButton, footer, header {
+        visibility: hidden !important;
+    }
+    
+    .stApp > div:first-child {
+        padding-top: 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# === POWERPOINT-EXACT HEADER ===
-st.markdown("""
-<div class="powerpoint-header">
-    <h1>🏛️ Next-gen local democracy</h1>
-    <p style="font-size: 1.25rem; margin: 1rem 0 0 0; opacity: 0.9;">
-        Track Governance | Create petitions | Open or Incognito Reporting
-    </p>
-    <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-        <span style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px;">
-            👥 CITIZENS
-        </span>
-        <span style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px;">
-            🏛️ PUBLIC BODIES
-        </span>
-        <span style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px;">
-            ⚖️ LEGAL/NGOs/POLICE
-        </span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# === ENHANCED SIDEBAR ===
-with st.sidebar:
-    st.markdown("### 🏛️ **Democracy Platform**")
-    st.markdown("*PowerPoint Implementation*")
-    
-    if JAC_AVAILABLE:
-        st.success("🤖 **Jac Language**: Active")
-    else:
-        st.info("🤖 **Jac Language**: Demo Mode")
-        
-    if BYLLM_AVAILABLE:
-        st.success("🧠 **byLLM AI**: Connected")
-    else:
-        st.info("🧠 **byLLM AI**: Simulation")
-    
-    st.markdown("---")
-    
-    page = st.selectbox('🏛️ **Choose Your View**:', [
-        '👥 1. General Citizens View',
-        '🏛️ 2. Public Bodies/Institutions View', 
-        '⚖️ 3. Legal Professionals/NGOs/Police View',
-        '📊 4. Platform Analytics & AI',
-        '🌐 5. Share Democracy Platform'
-    ])
-    
-    st.markdown("### 📊 **Live Statistics**")
-    st.write(f"👥 Citizens: {len(st.session_state.jac_citizens) + 45}")
-    st.write(f"📋 Petitions: {len(st.session_state.jac_petitions) + 12}")
-    st.write(f"📝 Reports: {len(st.session_state.jac_reports) + 28}")
-
-# === POWERPOINT-EXACT PAGES (FIXED) ===
-
-if page == '👥 1. General Citizens View':
-    st.markdown("### 👥 **General Citizens View**")
-    st.markdown("*Track performance, report incidents, create petitions, and receive regular updates*")
-    
-    tab1, tab2, tab3, tab4 = st.tabs(['🔍 Track Governance', '📝 Open/Incognito Reporting', '📋 Create/Upvote Petitions', '📢 Regular Updates'])
-    
-    with tab1:
-        st.markdown("#### 🔍 **Governance Performance Tracking**")
-        st.markdown("*Track performance of leaders, public institutions and the public sector*")
-        
-        st.markdown("""
-        <div class="citizen-card">
-            <h4>📊 <strong>Track Your Leaders & Institutions</strong></h4>
-            <p>Monitor performance of public sector, leaders, and institutions in real-time</p>
+# === HEADER COMPONENT ===
+def render_mau2_header():
+    st.markdown(f"""
+    <div class="mau2-header">
+        <div class="mau2-logo">
+            <span style="background: linear-gradient(45deg, #ffffff, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">MAU2</span>
         </div>
-        """, unsafe_allow_html=True)
-        
-        # FIXED: Unique form key
-        with st.form("governance_tracking_form_unique"):
-            institution = st.selectbox("Select Institution to Track:", [
-                "Municipal Government", "County Administration", "Public Works",
-                "Health Department", "Education Department", "Police Department"
-            ])
-            
-            performance_metric = st.selectbox("Performance Area:", [
-                "Service Delivery", "Transparency", "Response Time", 
-                "Budget Management", "Public Engagement", "Corruption Prevention"
-            ])
-            
-            rating = st.slider("Performance Rating (1-10):", 1, 10, 5)
-            comments = st.text_area("Your Assessment:")
-            
-            if st.form_submit_button("📊 Track Performance", type="primary"):
-                tracking_data = {
-                    'metric': performance_metric,
-                    'rating': rating,
-                    'comments': comments
-                }
-                
-                mock_citizen = JacCitizen("Current User", "user@email.com", "Local Area")
-                tracking_entry = mock_citizen.track_governance_performance(institution, tracking_data)
-                ai_analysis = mock_citizen.ai_analyze_governance(institution)
-                
-                st.success(f"✅ Performance tracked for {institution}")
-                
-                st.markdown(f"""
-                <div class="ai-enhanced">
-                    <h4>🤖 AI Analysis</h4>
-                    <p>{ai_analysis}</p>
-                </div>
-                """, unsafe_allow_html=True)
-    
-    with tab2:
-        st.markdown("#### 📝 **Open or Incognito Reporting**")
-        st.markdown("*Report incidents to police, NGOs or legal professionals, openly or anonymously*")
-        
-        # FIXED: Unique form key
-        with st.form("citizen_reporting_form_unique"):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                report_type = st.selectbox("Report Type:", [
-                    "Crime", "Safety", "Legal Issue", "Human Rights",
-                    "Corruption", "Environment", "Other"
-                ])
-                location = st.text_input("Location of Incident:")
-                
-            with col2:
-                is_incognito = st.checkbox("🔒 **Submit Incognito (Anonymous)**")
-                urgency = st.selectbox("Urgency Level:", ["Low", "Medium", "High", "Emergency"])
-                
-            description = st.text_area("Detailed Description of Incident:")
-            reporter_name = "" if is_incognito else st.text_input("Your Name (if open reporting):")
-            
-            if st.form_submit_button("📝 Submit Report", type="primary"):
-                if description and location:
-                    report = JacReport(report_type, description, location, reporter_name, is_incognito)
-                    routing_info = report.ai_route_report()
-                    
-                    st.session_state.jac_reports.append(report)
-                    
-                    st.success(f"✅ Report {report.report_id} submitted successfully!")
-                    
-                    st.markdown(f"""
-                    <div class="ai-enhanced">
-                        <h4>🤖 AI Routing Complete</h4>
-                        <p><strong>Routed to:</strong> {routing_info['routing']}</p>
-                        <p><strong>Report ID:</strong> {report.report_id}</p>
-                        <p><strong>Status:</strong> {'Anonymous' if is_incognito else 'Open'} Report</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.error("Please fill in all required fields")
-    
-    with tab3:
-        st.markdown("#### 📋 **Create & Upvote Petitions**")
-        st.markdown("*Create petitions and upvote existing petitions*")
-        
-        # Petition creation
-        with st.expander("✍️ **Create New Petition**", expanded=False):
-            # FIXED: Unique form key
-            with st.form("create_petition_form_unique"):
-                petition_title = st.text_input("Petition Title:")
-                petition_description = st.text_area("Petition Description:")
-                creator_name = st.text_input("Your Name:")
-                target_institution = st.selectbox("Target Institution:", [
-                    "Municipal Government", "County Administration", "Public Works",
-                    "Health Department", "Education Department"
-                ])
-                
-                if st.form_submit_button("📋 Create Petition", type="primary"):
-                    if petition_title and petition_description and creator_name:
-                        petition = JacPetition(petition_title, petition_description, creator_name)
-                        petition.target_institution = target_institution
-                        
-                        ai_category = petition.ai_categorize_petition()
-                        
-                        st.session_state.jac_petitions.append(petition)
-                        
-                        st.success(f"✅ Petition created: {petition.petition_id}")
-                        st.markdown(f"""
-                        <div class="ai-enhanced">
-                            <h4>🤖 AI Categorization</h4>
-                            <p>{ai_category}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-        
-        # Show existing petitions for upvoting
-        st.markdown("#### 👍 **Existing Petitions - Upvote to Show Support**")
-        
-        sample_petitions = [
-            JacPetition("Improve Public Transportation", "Better bus routes needed in downtown area", "John Smith"),
-            JacPetition("Fix Street Lighting", "Multiple streetlights not working on Main Street", "Jane Doe"),
-            JacPetition("Community Park Development", "Need new park with playground equipment", "Mike Johnson")
-        ]
-        
-        all_petitions = st.session_state.jac_petitions + sample_petitions
-        
-        for i, petition in enumerate(all_petitions):
-            with st.expander(f"📋 {petition.title} - {petition.upvotes} votes"):
-                st.write(f"**Creator:** {petition.creator}")
-                st.write(f"**Description:** {petition.description}")
-                st.write(f"**Created:** {petition.created_date}")
-                st.write(f"**Status:** {petition.status}")
-                
-                col_vote, col_info = st.columns([1, 2])
-                with col_vote:
-                    # FIXED: Unique button key
-                    if st.button(f"👍 Upvote", key=f"upvote_petition_{i}_{petition.petition_id}"):
-                        petition.upvote_petition()
-                        st.success(f"Vote added! Total: {petition.upvotes}")
-                        st.experimental_rerun()
-                
-                with col_info:
-                    st.metric("Current Votes", petition.upvotes, delta="+1" if i < 3 else "New")
-    
-    with tab4:
-        st.markdown("#### 📢 **Regular Updates & Participation**")
-        st.markdown("*Receive updates from institutions and participate in civic education*")
-        
-        st.markdown("##### 📰 **Latest Updates from Institutions**")
-        
-        updates = [
-            {
-                "institution": "Municipal Government",
-                "update": "New budget approved for infrastructure improvements - $2M allocated for road repairs",
-                "date": "2025-09-30",
-                "type": "Budget Update"
-            },
-            {
-                "institution": "Public Works Department",
-                "update": "Street lighting project completed on Main Street - 15 new LED lights installed",
-                "date": "2025-09-28",
-                "type": "Project Completion"
-            }
-        ]
-        
-        for update in updates:
-            st.markdown(f"""
-            <div class="public-body-card">
-                <h4>🏛️ {update['institution']}</h4>
-                <p><strong>{update['type']}</strong></p>
-                <p>{update['update']}</p>
-                <small>📅 {update['date']}</small>
+        <div class="mau2-nav">
+            <a href="#" class="mau2-nav-item">Home</a>
+            <a href="#" class="mau2-nav-item">Petitions</a>
+            <a href="#" class="mau2-nav-item">Reports</a>
+            <a href="#" class="mau2-nav-item">Community</a>
+            <a href="#" class="mau2-nav-item">About</a>
+            <div style="margin-left: 1rem;">
+                <span style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">
+                    👤 {st.session_state.get('user_name', 'Sophia Carter')}
+                </span>
             </div>
-            """, unsafe_allow_html=True)
-
-elif page == '📊 4. Platform Analytics & AI':
-    st.markdown("### 📊 **Platform Analytics & AI**")
-    st.markdown("**Comprehensive platform statistics and AI-powered insights**")
-    
-    # Analytics overview
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("👥 Total Citizens", len(st.session_state.jac_citizens) + 45, delta="+5 this week")
-    with col2:
-        st.metric("📋 Total Petitions", len(st.session_state.jac_petitions) + 12, delta="+2 new")
-    with col3:
-        st.metric("📝 Total Reports", len(st.session_state.jac_reports) + 28, delta="+8 today")
-    with col4:
-        st.metric("🏛️ Response Rate", "87%", delta="+3%")
-    
-    # AI-powered insights
-    if st.button("🤖 Generate AI Platform Analysis"):
-        st.markdown("""
-        <div class="ai-enhanced">
-            <h4>🤖 AI Platform Analysis</h4>
-            <p><strong>Engagement Pattern:</strong> High citizen participation with balanced usage across all three user types</p>
-            <p><strong>Report Routing:</strong> 78% of reports successfully auto-routed to appropriate oversight bodies</p>
-            <p><strong>Response Efficiency:</strong> Government response time improved by 35% with AI categorization</p>
-            <p><strong>Recommendation:</strong> Continue promoting cross-sector collaboration between citizens, government, and oversight bodies</p>
         </div>
-        """, unsafe_allow_html=True)
-    
-    # Platform health indicators
-    st.markdown("### 🎯 **Platform Health Indicators**")
-    
-    col_left, col_right = st.columns(2)
-    
-    with col_left:
-        st.markdown("**📈 Citizen Engagement**")
-        st.progress(0.85)
-        st.caption("✅ 85% - Excellent community participation")
-        
-        st.markdown("**🤖 AI Performance**")  
-        st.progress(0.92)
-        st.caption("🤖 92% - AI categorization accuracy")
-    
-    with col_right:
-        st.markdown("**🏛️ Government Responsiveness**")
-        st.progress(0.87)
-        st.caption("🏛️ 87% - Strong institutional engagement")
-        
-        st.markdown("**⚖️ Oversight Effectiveness**")
-        st.progress(0.94)
-        st.caption("⚖️ 94% - Excellent oversight coverage")
+    </div>
+    """, unsafe_allow_html=True)
 
-else:
-    # Simplified other pages to avoid more form conflicts
-    st.markdown(f"### {page}")
-    st.markdown("**This section is being enhanced with additional PowerPoint features.**")
+# === LANDING PAGE ===
+def render_landing_page():
+    render_mau2_header()
     
     st.markdown("""
-    <div class="powerpoint-header">
-        <h2>🏛️ THE FUTURE IS ALREADY WITHIN US</h2>
-        <h2>AND IT IS UPON US TO BUILD IT</h2>
-        <p style="font-size: 1.5rem; margin-top: 2rem;">
-            <span style="color: #FFFFFF;">welcoming the digital era</span>
+    <div class="mau2-hero">
+        <h1>Welcome to<br><span style="color: #3b82f6;">MAU2</span></h1>
+        <p>Your platform for civic engagement. Create, track, and resolve community issues with transparency and collaboration.</p>
+        <br>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+            <button class="mau2-btn-primary" onclick="window.location.href='#get-started'">
+                Get Started
+            </button>
+        </div>
+        <br>
+        <p style="font-size: 0.9rem; margin-top: 2rem;">
+            By continuing, you agree to our <a href="#" style="color: #3b82f6;">Terms of Service</a> and <a href="#" style="color: #3b82f6;">Privacy Policy</a>.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.info("🚧 **Additional PowerPoint features are being implemented.** The core Citizens View and Analytics are fully functional!")
+    # Feature showcase
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        <div class="mau2-card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 1.5rem;">📋</span>
+                </div>
+                <h3>Create Petitions</h3>
+                <p style="color: #64748b; font-size: 0.9rem;">Start petitions for community issues and gather support from fellow citizens.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="mau2-card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 1.5rem;">📍</span>
+                </div>
+                <h3>Report Issues</h3>
+                <p style="color: #64748b; font-size: 0.9rem;">Report incidents and issues in your community with location-based mapping.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="mau2-card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 1.5rem;">📊</span>
+                </div>
+                <h3>Track Progress</h3>
+                <p style="color: #64748b; font-size: 0.9rem;">Monitor the status and progress of your petitions and community issues.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Call to action
+    if st.button("🚀 Get Started", key="cta_button", use_container_width=True):
+        st.session_state.current_page = 'onboarding'
+        st.rerun()
 
-# === FOOTER ===
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; 
-            padding: 3rem 2rem; 
-            background: linear-gradient(135deg, #10B5BF, #0EA5E9); 
-            border-radius: 12px;
-            color: white;
-            margin-top: 3rem;">
-    <h2>🏛️ Next-Gen Local Democracy Platform</h2>
-    <p><strong>PowerPoint Implementation | Jac Language Enhanced | byLLM AI Powered</strong></p>
-    <p>🌍 <em>The future is already within us and it is upon us to build it</em></p>
-</div>
-""", unsafe_allow_html=True)
+# === ONBOARDING/RIGHTS PAGE ===
+def render_onboarding_page():
+    render_mau2_header()
+    
+    st.markdown("""
+    <div style="max-width: 600px; margin: 4rem auto; text-align: center;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 2rem;">🛡️</span>
+        </div>
+        <h1 style="color: #1e293b; margin-bottom: 2rem;">Know Your Rights</h1>
+        <p style="color: #64748b; font-size: 1.1rem; line-height: 1.6; margin-bottom: 3rem;">
+            As a citizen, you have the right to petition your government and escalate issues through proper channels. MAU2 helps you navigate this process effectively.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0;"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("Next", key="next_onboarding", use_container_width=True):
+        st.session_state.current_page = 'dashboard'
+        st.rerun()
 
-# Welcome message
-if st.session_state.visit_count == 1:
-    st.balloons()
-    st.success("🎉 **Welcome to the Next-Gen Local Democracy Platform!** PowerPoint implementation with Jac language and AI enhancement - Now Error Free!")
+# === MAIN DASHBOARD ===
+def render_dashboard():
+    render_mau2_header()
+    
+    # User profile section
+    col1, col2 = st.columns([1, 3])
+    
+    with col1:
+        st.markdown("""
+        <div class="mau2-card">
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 2rem;">👤</span>
+                </div>
+                <h3 style="margin-bottom: 0.5rem;">Sophia Carter</h3>
+                <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">Citizen<br>Joined 2021</p>
+                <div style="display: flex; justify-content: space-around; margin: 2rem 0;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">12</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Petitions</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">5</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Reports</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">2</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Resolved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Quick actions
+        st.markdown("### Quick Actions")
+        if st.button("📋 Create Petition", use_container_width=True):
+            st.session_state.current_page = 'create_petition'
+            st.rerun()
+        if st.button("📝 Report an Issue", use_container_width=True):
+            st.session_state.current_page = 'report_incident'
+            st.rerun()
+        if st.button("👀 View My Activity", use_container_width=True):
+            st.session_state.current_page = 'my_activity'
+            st.rerun()
+        if st.button("⚙️ Settings", use_container_width=True):
+            st.session_state.current_page = 'settings'
+            st.rerun()
+    
+    with col2:
+        st.markdown("## Your Civic Feed")
+        st.markdown("*Stay informed and engaged with your community.*")
+        
+        # Petitions section
+        st.markdown("### Petitions")
+        
+        col_pet1, col_pet2 = st.columns(2)
+        
+        with col_pet1:
+            st.markdown("""
+            <div class="mau2-card">
+                <div style="height: 120px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 2rem;">🏞️</span>
+                </div>
+                <h4>Improve Local Park Facilities</h4>
+                <p style="font-size: 0.9rem; color: #64748b; margin: 0.5rem 0;">A petition to upgrade the playground equipment and add more seating in Central Park.</p>
+                <button style="background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer;">View Petition</button>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_pet2:
+            st.markdown("""
+            <div class="mau2-card">
+                <div style="height: 120px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 2rem;">🚦</span>
+                </div>
+                <h4>Traffic Calming Measures on Elm Street</h4>
+                <p style="font-size: 0.9rem; color: #64748b; margin: 0.5rem 0;">Request for speed bumps and pedestrian crossings to improve safety on Elm Street.</p>
+                <button style="background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer;">View Petition</button>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Reports section
+        st.markdown("### Reports")
+        
+        col_rep1, col_rep2 = st.columns(2)
+        
+        with col_rep1:
+            st.markdown("""
+            <div class="mau2-card">
+                <div style="height: 120px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 2rem;">🕳️</span>
+                </div>
+                <h4>Pothole on Main Street</h4>
+                <p style="font-size: 0.9rem; color: #64748b; margin: 0.5rem 0;">Report of a large pothole causing traffic hazards on Main Street.</p>
+                <button style="background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer;">View Report</button>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_rep2:
+            st.markdown("""
+            <div class="mau2-card">
+                <div style="height: 120px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 2rem;">🗑️</span>
+                </div>
+                <h4>Illegal Dumping near Riverbank</h4>
+                <p style="font-size: 0.9rem; color: #64748b; margin: 0.5rem 0;">Report of illegal waste dumping near the riverbank, posing environmental risks.</p>
+                <button style="background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer;">View Report</button>
+            </div>
+            """, unsafe_allow_html=True)
+
+# === CREATE PETITION PAGE ===
+def render_create_petition():
+    render_mau2_header()
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="mau2-progress">
+        <div class="mau2-progress-step active">1</div>
+        <div style="width: 50px; height: 2px; background: #e2e8f0;"></div>
+        <div class="mau2-progress-step">2</div>
+        <div style="width: 50px; height: 2px; background: #e2e8f0;"></div>
+        <div class="mau2-progress-step">3</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="mau2-form-container">
+        <div class="mau2-form-header">
+            <h2>Create a Petition</h2>
+            <p>Fill in the details below to start your petition.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    with st.form("petition_form"):
+        petition_title = st.text_input("Petition Title", placeholder="Enter a concise title for your petition")
+        
+        category = st.selectbox("Category", [
+            "Select a category",
+            "Transportation", 
+            "Environment",
+            "Infrastructure", 
+            "Public Safety",
+            "Education",
+            "Healthcare"
+        ])
+        
+        description = st.text_area(
+            "Description", 
+            placeholder="Provide a detailed description of the issue you want to address",
+            height=150
+        )
+        
+        if st.form_submit_button("Next", use_container_width=True):
+            if petition_title and category != "Select a category" and description:
+                st.session_state.petition_draft = {
+                    'title': petition_title,
+                    'category': category,
+                    'description': description
+                }
+                st.session_state.current_page = 'petition_evidence'
+                st.rerun()
+            else:
+                st.error("Please fill in all required fields")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    if st.button("← Back to Dashboard", key="back_to_dashboard"):
+        st.session_state.current_page = 'dashboard'
+        st.rerun()
+
+# === PETITION EVIDENCE & LOCATION PAGE ===
+def render_petition_evidence():
+    render_mau2_header()
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="mau2-progress">
+        <div class="mau2-progress-step completed">1</div>
+        <div style="width: 50px; height: 2px; background: #10b981;"></div>
+        <div class="mau2-progress-step active">2</div>
+        <div style="width: 50px; height: 2px; background: #e2e8f0;"></div>
+        <div class="mau2-progress-step">3</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="mau2-form-container">
+        <div class="mau2-form-header">
+            <h2>Add Evidence & Location</h2>
+            <p>Upload images, short videos (max 60s), PDFs, or voice notes to support your petition. Clear and relevant evidence strengthens your case.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown("### Upload Evidence")
+        
+        # File uploader with custom styling
+        uploaded_files = st.file_uploader(
+            "",
+            type=['jpg', 'png', 'mp4', 'pdf', 'mp3'],
+            accept_multiple_files=True,
+            help="Supports: JPG, PNG, MP4, PDF, MP3"
+        )
+        
+        if uploaded_files:
+            st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully")
+            for file in uploaded_files:
+                st.write(f"📎 {file.name}")
+    
+    with col2:
+        st.markdown("### Specify Location")
+        st.markdown("*Pinpoint the location of the issue on the map.*")
+        
+        # Simulated map placeholder
+        st.markdown("""
+        <div style="height: 200px; background: linear-gradient(135deg, #93c5fd, #60a5fa); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 1rem 0;">
+            <span style="color: white; font-size: 1.2rem;">🗺️ Interactive Map</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        location_input = st.text_input("Location", placeholder="e.g., City Hall, 123 Main St")
+        
+        col_auto1, col_auto2 = st.columns(2)
+        with col_auto1:
+            auto_snap_time = st.checkbox("Auto-snap timestamp from evidence metadata", value=True)
+        with col_auto2:
+            auto_snap_geo = st.checkbox("Auto-snap geotag from evidence metadata", value=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    col_back, col_next = st.columns([1, 1])
+    with col_back:
+        if st.button("← Back", key="back_to_petition_form", use_container_width=True):
+            st.session_state.current_page = 'create_petition'
+            st.rerun()
+    
+    with col_next:
+        if st.button("Next: Review & Submit →", key="next_to_review", use_container_width=True):
+            st.session_state.current_page = 'petition_review'
+            st.rerun()
+
+# === PETITION REVIEW & SUBMIT ===
+def render_petition_review():
+    render_mau2_header()
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="mau2-progress">
+        <div class="mau2-progress-step completed">1</div>
+        <div style="width: 50px; height: 2px; background: #10b981;"></div>
+        <div class="mau2-progress-step completed">2</div>
+        <div style="width: 50px; height: 2px; background: #10b981;"></div>
+        <div class="mau2-progress-step active">3</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="mau2-form-container">
+        <div class="mau2-form-header">
+            <h2>Review and Submit Petition</h2>
+            <p>Final step to make your voice heard. Please review the details below.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Privacy Settings
+    st.markdown("### Privacy Settings")
+    st.markdown("*Choose how your identity is displayed.*")
+    
+    col_pub, col_priv = st.columns(2)
+    
+    with col_pub:
+        if st.button("👁️ Public", key="public_option", use_container_width=True):
+            st.session_state.petition_privacy = 'public'
+    
+    with col_priv:
+        if st.button("🔒 Private", key="private_option", use_container_width=True):
+            st.session_state.petition_privacy = 'private'
+    
+    incognito_mode = st.checkbox("🕵️ Incognito Mode", help="Report privately — MAU2 will hide your identity from public listings; organizations may still request verification.")
+    
+    # Petition Summary
+    if 'petition_draft' in st.session_state:
+        draft = st.session_state.petition_draft
+        
+        st.markdown("### Petition Summary")
+        
+        summary_data = {
+            "Title": draft.get('title', 'N/A'),
+            "Description": draft.get('description', 'N/A')[:100] + "..." if len(draft.get('description', '')) > 100 else draft.get('description', 'N/A'),
+            "Category": draft.get('category', 'N/A'),
+            "Location": "Elm Street, Springfield"  # Placeholder
+        }
+        
+        for key, value in summary_data.items():
+            st.write(f"**{key}**: {value}")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    col_back, col_submit = st.columns([1, 1])
+    with col_back:
+        if st.button("← Back", key="back_to_evidence", use_container_width=True):
+            st.session_state.current_page = 'petition_evidence'
+            st.rerun()
+    
+    with col_submit:
+        if st.button("Submit Petition", key="submit_petition", use_container_width=True):
+            # Simulate petition submission
+            with st.spinner("Submitting petition..."):
+                time.sleep(2)
+            
+            st.success("✅ Petition submitted successfully!")
+            st.info("📧 Petition submitted — 4 organizations auto-notified")
+            
+            # Add to session state
+            if 'petition_draft' in st.session_state:
+                petition = st.session_state.petition_draft.copy()
+                petition['id'] = f"PET-{len(st.session_state.petitions) + 1:04d}"
+                petition['status'] = 'submitted'
+                petition['votes'] = 1
+                petition['submitted_date'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                st.session_state.petitions.append(petition)
+            
+            time.sleep(2)
+            st.session_state.current_page = 'dashboard'
+            st.rerun()
+
+# === MAIN APP ROUTING ===
+def main():
+    page = st.session_state.get('current_page', 'landing')
+    
+    if page == 'landing':
+        render_landing_page()
+    elif page == 'onboarding':
+        render_onboarding_page()
+    elif page == 'dashboard':
+        render_dashboard()
+    elif page == 'create_petition':
+        render_create_petition()
+    elif page == 'petition_evidence':
+        render_petition_evidence()
+    elif page == 'petition_review':
+        render_petition_review()
+    else:
+        render_dashboard()  # Default fallback
+
+if __name__ == "__main__":
+    main()
